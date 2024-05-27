@@ -167,6 +167,49 @@ const CLOSE_ICON = `
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
 `
 
+const fonts = {
+  'Albert Sans': {
+    fontFaceStyles: `@font-face {
+      font-family: "Albert Sans";
+      src: url("/assets/fonts/AlbertSans-VariableFont_wght.woff2") format('woff2');
+      font-weight: 200 700;
+      font-display: swap;
+      font-style: normal;
+    }`,
+    titleFontStyles: `:root {
+      --title-font: "Albert Sans";
+    }`,
+    bodyFontStyles: `:root {
+      --body-font: "Albert Sans";
+      --font-factor: 1.1;
+    }`,
+    postBodyFontStyles: `:root {
+      --post-body-font: "Albert Sans";
+      --post-font-factor: 1.1;
+    }`
+  },
+  'Alegreya': {
+    fontFaceStyles: `@font-face {
+      font-family: "Alegreya";
+      src: url("/assets/fonts/Alegreya-VariableFont_wght.woff2") format('woff2');
+      font-weight: 200 700;
+      font-display: swap;
+      font-style: normal;
+    }`,
+    titleFontStyles: `:root {
+      --title-font: "Alegreya";
+    }`,
+    bodyFontStyles: `:root {
+      --body-font: "Alegreya";
+      --font-factor: 1.2;
+    }`,
+    postBodyFontStyles: `:root {
+      --post-body-font: "Alegreya";
+      --post-font-factor: 1.2;
+    }`
+  }
+}
+
 class ThemeWidget {
   constructor(position = 'bottom-right') {
     this.position = this.getPosition(position)
@@ -184,6 +227,7 @@ class ThemeWidget {
   glowColorTwoControl = null
   titleFontControl = null
   bodyFontControl = null
+  postBodyFontControl = null
   heroTitleControl = null
   heroImageControl = null
   originalHeroTitleContent = ''
@@ -261,17 +305,19 @@ class ThemeWidget {
         <div class="widget-field">
           <label for="title-font">Title font</label>
           <select id="title-font">
-            <option value="ClashDisplay-Variable">Clash Display</option>
-            <option value="GeneralSans-Variable">General Sans</option>
-            <option value="Literata-Variable">Literata</option>
+            ${Object.keys(fonts).map((font) => `<option value="${font}">${font}</option>`).join('')}
           </select>
         </div>
         <div class="widget-field">
           <label for="body-font">Body font</label>
           <select id="body-font">
-            <option value="ClashDisplay-Variable">Clash Display</option>
-            <option value="GeneralSans-Variable" selected>General Sans</option>
-            <option value="Literata-Variable">Literata</option>
+            ${Object.keys(fonts).map((font) => `<option value="${font}">${font}</option>`).join('')}
+          </select>
+        </div>
+        <div class="widget-field">
+          <label for="post-body-font">Post body font</label>
+          <select id="post-body-font">
+            ${Object.keys(fonts).map((font) => `<option value="${font}">${font}</option>`).join('')}
           </select>
         </div>
         <div class="widget-field homepage-field">
@@ -305,10 +351,18 @@ class ThemeWidget {
   }
 
   injectStyles(id, stylesContent) {
+    if (document.getElementById(id)) {
+      return
+    }
     const styleTag = document.createElement('style')
     styleTag.id = id
     styleTag.innerHTML = stylesContent.replace(/^\s+|\n/gm, '')
     document.head.appendChild(styleTag)
+  }
+
+  updateStyles(id, stylesContent) {
+    const styleTag = document.getElementById(id)
+    styleTag.innerHTML = stylesContent.replace(/^\s+|\n/gm, '')
   }
 
   getCssVariableValue(variable) {
@@ -332,6 +386,7 @@ class ThemeWidget {
     this.glowColorTwoControl = document.getElementById('glow-color-2')
     this.titleFontControl = document.getElementById('title-font')
     this.bodyFontControl = document.getElementById('body-font')
+    this.postBodyFontControl = document.getElementById('post-body-font')
     this.heroTitleControl = document.getElementById('hero-title-text')
     this.originalHeroTitleContent = document.querySelector('.gl-home-header__title') ? document.querySelector('.gl-home-header__title').innerHTML : ''
     this.heroTaglineControl = document.getElementById('hero-tagline-text')
@@ -345,6 +400,9 @@ class ThemeWidget {
 
   setInitialValues() {
     this.accentColorControl.value = this.getCssVariableValue('--accent')
+    this.injectStyles('title-font-styles', '')
+    this.injectStyles('body-font-styles', '')
+    this.injectStyles('post-body-font-styles', '')
   }
 
   addEventListeners() {
@@ -353,6 +411,7 @@ class ThemeWidget {
     this.glowColorTwoControl.addEventListener('input', this.changeGlowColorTwo.bind(this))
     this.titleFontControl.addEventListener('change', this.changeTitleFont.bind(this))
     this.bodyFontControl.addEventListener('change', this.changeBodyFont.bind(this))
+    this.postBodyFontControl.addEventListener('change', this.changePostBodyFont.bind(this))
     this.heroTitleControl.addEventListener('input', this.changeHeroTitle.bind(this))
     this.heroTaglineControl.addEventListener('input', this.changeHeroTagline.bind(this))
     this.heroImageControl.addEventListener('change', this.changeHeroImage.bind(this))
@@ -374,17 +433,18 @@ class ThemeWidget {
   }
 
   changeTitleFont(event) {
-    const value = event.target.value
-    this.setCssVariableValue('--title-font', value)
-    if (value === 'GeneralSans-Variable' || value === 'Literata-Variable') {
-      this.setCssVariableValue('--headings-weight', '600')
-    } else {
-      this.setCssVariableValue('--headings-weight', '500')
-    }
+    this.injectStyles(event.target.value, fonts[event.target.value].fontFaceStyles)
+    this.updateStyles('title-font-styles', fonts[event.target.value].titleFontStyles)
   }
 
   changeBodyFont(event) {
-    this.setCssVariableValue('--body-font', event.target.value)
+    this.injectStyles(event.target.value, fonts[event.target.value].fontFaceStyles)
+    this.updateStyles('body-font-styles', fonts[event.target.value].bodyFontStyles)
+  }
+
+  changePostBodyFont(event) {
+    this.injectStyles(event.target.value, fonts[event.target.value].fontFaceStyles)
+    this.updateStyles('post-body-font-styles', fonts[event.target.value].postBodyFontStyles)
   }
 
   changeHeroTitle(event) {
