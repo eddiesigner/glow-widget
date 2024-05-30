@@ -38,11 +38,12 @@ export const styles = `
     border: none;
     cursor: pointer;
     background-color: var(--accent);
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 8px 16px -2px;
-    transition: opacity .2s linear;
+    transition: all .1s ease-in-out;
   }
   .widget-button:hover {
-    opacity: 0.9;
+    box-shadow: 0 94px 38px rgba(0, 0, 0, .01), 0 53px 32px rgba(0, 0, 0, .05), 0 24px 24px rgba(0, 0, 0, .09), 0 6px 13px rgba(0, 0, 0, .1), 0 0 0 rgba(0, 0, 0, .1);
+    opacity: 1;
+    transform: translateY(-2px);
   }
   .widget-icon {
     display: flex;
